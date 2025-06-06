@@ -327,8 +327,29 @@ export function NoteEditor({ note, onNoteChange }: NoteEditorProps) {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Start writing your note..."
-          className="min-h-[calc(100vh-300px)] border-none shadow-none resize-none focus-visible:ring-0 text-base leading-relaxed"
+          className="min-h-[calc(100vh-360px)] border-none shadow-none resize-none focus-visible:ring-0 text-base leading-relaxed"
         />
+      </div>
+
+      {/* Status bar */}
+      <div className="px-4 py-2 border-t border-border text-xs text-muted-foreground flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-1">
+            <Clock className="h-3 w-3" />
+            <span>{formatLastSaved()}</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <Calendar className="h-3 w-3" />
+            <span>Created {new Date(note.createdAt).toLocaleDateString()}</span>
+          </div>
+          <span>{content.length} characters</span>
+          <span>{content.split(/\s+/).filter(word => word.length > 0).length} words</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button variant="ghost" size="sm">
+            <Eye className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );
