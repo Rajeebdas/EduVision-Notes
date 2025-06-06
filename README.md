@@ -16,12 +16,27 @@ A modern note-taking application with authentication, calendar integration, and 
 
 ## Quick Start
 
-### 1. Database Setup (Supabase)
+### 1. Free Database Setup Options
 
+#### Option A: Supabase (Recommended - 500MB free)
 1. Go to [Supabase](https://supabase.com) and create a free account
-2. Create a new project
-3. Go to Settings → Database → Connection string
-4. Copy the URI connection string (replace `[YOUR-PASSWORD]` with your database password)
+2. Create a new project (choose any region)
+3. Wait for project to initialize (2-3 minutes)
+4. Go to Settings → Database → Connection string
+5. Copy the URI connection string
+6. Replace `[YOUR-PASSWORD]` with the password you set during project creation
+
+#### Option B: Railway PostgreSQL (Free tier available)
+1. Go to [Railway](https://railway.app) and sign up
+2. Create new project → Add PostgreSQL
+3. Click on PostgreSQL service → Connect tab
+4. Copy the `DATABASE_URL` connection string
+
+#### Option C: Aiven (1 month free)
+1. Go to [Aiven](https://aiven.io) and create account
+2. Create PostgreSQL service (choose smallest size)
+3. Download SSL certificate if required
+4. Copy connection string from service overview
 
 ### 2. Environment Configuration
 
@@ -55,35 +70,65 @@ npm run dev
 
 The application will be available at `http://localhost:5000`
 
-## Deployment
+## Free Deployment Options
 
-### Railway Deployment
+### 🚀 Railway (Recommended - Easy Deploy)
 
-1. Fork this repository
-2. Connect your GitHub account to [Railway](https://railway.app)
-3. Create a new project from your forked repository
-4. Add environment variables in Railway dashboard:
-   - `DATABASE_URL`: Your Supabase connection string
-   - `SESSION_SECRET`: A random secret string
+**Step 1: Database Setup**
+1. Go to [Railway](https://railway.app) and sign up with GitHub
+2. Create new project → Add PostgreSQL database
+3. Copy the `DATABASE_URL` from PostgreSQL service
+
+**Step 2: App Deployment**
+1. Fork this repository to your GitHub
+2. In Railway, create new project → Deploy from GitHub repo
+3. Select your forked repository
+4. Add environment variables:
+   - `DATABASE_URL`: (from step 1)
+   - `SESSION_SECRET`: Generate random string
    - `NODE_ENV`: `production`
+5. Deploy automatically happens
 
-### Render Deployment
+### 🌐 Render (Free tier available)
 
+**Step 1: Setup**
 1. Fork this repository
-2. Connect your GitHub account to [Render](https://render.com)
-3. Create a new Web Service
-4. Set build command: `npm install && npm run build`
-5. Set start command: `npm start`
-6. Add environment variables
+2. Create [Render](https://render.com) account
+3. Create PostgreSQL database (free tier)
+4. Note the database URL
 
-### Vercel Deployment
+**Step 2: Deploy**
+1. Create new Web Service from your GitHub repo
+2. Build Command: `npm install && npm run build`
+3. Start Command: `npm start`
+4. Add environment variables (same as Railway)
 
-1. Fork this repository
+### ⚡ Vercel + Supabase
+
+**Step 1: Database**
+1. Create [Supabase](https://supabase.com) project (500MB free)
+2. Copy database connection string
+
+**Step 2: Deploy**
+1. Fork repository
 2. Connect to [Vercel](https://vercel.com)
-3. Configure build settings:
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
+3. Import your forked repository
 4. Add environment variables
+5. Deploy
+
+### 🐳 Self-hosted with Docker
+
+```bash
+# Clone and setup
+git clone <your-forked-repo>
+cd eduvision-notes
+cp .env.example .env
+# Edit .env with your database URL
+
+# Build and run
+docker build -t eduvision-notes .
+docker run -p 5000:5000 --env-file .env eduvision-notes
+```
 
 ## Environment Variables
 
