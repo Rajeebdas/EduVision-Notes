@@ -3,58 +3,58 @@
 @tailwind utilities;
 
 :root {
-  --background: 210 11% 98%; /* #F5F7FA */
-  --foreground: 222 84% 5%; /* #0F1419 */
-  --muted: 210 40% 98%; /* #F1F5F9 */
-  --muted-foreground: 215 16% 47%; /* #64748B */
+  --background: 258 20% 98%; /* #FAFBFE */
+  --foreground: 258 84% 8%; /* #1A1625 */
+  --muted: 258 20% 96%; /* #F5F6FA */
+  --muted-foreground: 258 16% 50%; /* #6B7280 */
   --popover: 0 0% 100%; /* #FFFFFF */
-  --popover-foreground: 222 84% 5%; /* #0F1419 */
+  --popover-foreground: 258 84% 8%; /* #1A1625 */
   --card: 0 0% 100%; /* #FFFFFF */
-  --card-foreground: 222 84% 5%; /* #0F1419 */
-  --border: 214 32% 91%; /* #E2E8F0 */
-  --input: 214 32% 91%; /* #E2E8F0 */
-  --primary: 221 83% 53%; /* #2563EB */
-  --primary-foreground: 210 40% 98%; /* #F1F5F9 */
-  --secondary: 210 40% 96%; /* #F8FAFC */
-  --secondary-foreground: 222 84% 5%; /* #0F1419 */
-  --accent: 210 40% 96%; /* #F8FAFC */
-  --accent-foreground: 222 84% 5%; /* #0F1419 */
+  --card-foreground: 258 84% 8%; /* #1A1625 */
+  --border: 258 20% 90%; /* #E5E7EB */
+  --input: 258 20% 90%; /* #E5E7EB */
+  --primary: 258 85% 60%; /* #8B5CF6 */
+  --primary-foreground: 0 0% 100%; /* #FFFFFF */
+  --secondary: 258 20% 95%; /* #F3F4F6 */
+  --secondary-foreground: 258 84% 8%; /* #1A1625 */
+  --accent: 258 20% 95%; /* #F3F4F6 */
+  --accent-foreground: 258 84% 8%; /* #1A1625 */
   --destructive: 0 84% 60%; /* #EF4444 */
-  --destructive-foreground: 210 40% 98%; /* #F1F5F9 */
-  --ring: 221 83% 53%; /* #2563EB */
+  --destructive-foreground: 0 0% 100%; /* #FFFFFF */
+  --ring: 258 85% 60%; /* #8B5CF6 */
   --radius: 0.5rem;
-  --chart-1: 12 76% 61%; /* #E16A2F */
-  --chart-2: 173 58% 39%; /* #3C8F7C */
-  --chart-3: 197 37% 24%; /* #2F5A8B */
-  --chart-4: 43 74% 66%; /* #E5A934 */
-  --chart-5: 27 87% 67%; /* #E67E22 */
+  --chart-1: 258 85% 60%; /* #8B5CF6 */
+  --chart-2: 280 85% 60%; /* #A855F7 */
+  --chart-3: 300 85% 60%; /* #C084FC */
+  --chart-4: 240 85% 60%; /* #6366F1 */
+  --chart-5: 270 85% 60%; /* #9333EA */
 }
 
 .dark {
-  --background: 222 84% 5%; /* #0F1419 */
-  --foreground: 210 40% 98%; /* #F1F5F9 */
-  --muted: 217 33% 17%; /* #1E293B */
-  --muted-foreground: 215 20% 65%; /* #94A3B8 */
-  --popover: 224 71% 4%; /* #0C0A09 */
-  --popover-foreground: 210 40% 98%; /* #F1F5F9 */
-  --card: 224 71% 4%; /* #0C0A09 */
-  --card-foreground: 210 40% 98%; /* #F1F5F9 */
-  --border: 217 33% 17%; /* #1E293B */
-  --input: 217 33% 17%; /* #1E293B */
-  --primary: 221 83% 53%; /* #2563EB */
-  --primary-foreground: 210 40% 98%; /* #F1F5F9 */
-  --secondary: 217 33% 17%; /* #1E293B */
-  --secondary-foreground: 210 40% 98%; /* #F1F5F9 */
-  --accent: 217 33% 17%; /* #1E293B */
-  --accent-foreground: 210 40% 98%; /* #F1F5F9 */
+  --background: 258 84% 6%; /* #0A0612 */
+  --foreground: 258 20% 95%; /* #F3F4F6 */
+  --muted: 258 33% 15%; /* #1E1B2E */
+  --muted-foreground: 258 20% 65%; /* #9CA3AF */
+  --popover: 258 84% 4%; /* #070510 */
+  --popover-foreground: 258 20% 95%; /* #F3F4F6 */
+  --card: 258 84% 4%; /* #070510 */
+  --card-foreground: 258 20% 95%; /* #F3F4F6 */
+  --border: 258 33% 15%; /* #1E1B2E */
+  --input: 258 33% 15%; /* #1E1B2E */
+  --primary: 258 85% 60%; /* #8B5CF6 */
+  --primary-foreground: 0 0% 100%; /* #FFFFFF */
+  --secondary: 258 33% 15%; /* #1E1B2E */
+  --secondary-foreground: 258 20% 95%; /* #F3F4F6 */
+  --accent: 258 33% 15%; /* #1E1B2E */
+  --accent-foreground: 258 20% 95%; /* #F3F4F6 */
   --destructive: 0 63% 31%; /* #7F1D1D */
-  --destructive-foreground: 210 40% 98%; /* #F1F5F9 */
-  --ring: 221 83% 53%; /* #2563EB */
-  --chart-1: 220 70% 50%; /* #3B82F6 */
-  --chart-2: 160 60% 45%; /* #10B981 */
-  --chart-3: 30 80% 55%; /* #F59E0B */
-  --chart-4: 280 65% 60%; /* #8B5CF6 */
-  --chart-5: 340 75% 55%; /* #EF4444 */
+  --destructive-foreground: 258 20% 95%; /* #F3F4F6 */
+  --ring: 258 85% 60%; /* #8B5CF6 */
+  --chart-1: 258 85% 60%; /* #8B5CF6 */
+  --chart-2: 280 85% 60%; /* #A855F7 */
+  --chart-3: 300 85% 60%; /* #C084FC */
+  --chart-4: 240 85% 60%; /* #6366F1 */
+  --chart-5: 270 85% 60%; /* #9333EA */
 }
 
 @layer base {
