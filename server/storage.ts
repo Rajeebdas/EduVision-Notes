@@ -8,6 +8,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByGoogleId(googleId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined>;
   
   // Note methods
   getNotesByUserId(userId: number): Promise<Note[]>;
@@ -42,6 +43,15 @@ export class DatabaseStorage implements IStorage {
       .values(insertUser)
       .returning();
     return user;
+  }
+
+  async updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser || undefined;
   }
 
   async getNotesByUserId(userId: number): Promise<Note[]> {
@@ -81,7 +91,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(notes)
       .where(and(eq(notes.id, id), eq(notes.userId, userId)));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   async searchNotes(userId: number, query: string): Promise<Note[]> {

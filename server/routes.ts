@@ -64,36 +64,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   ));
 
-  passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID || '',
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-    callbackURL: "/api/auth/google/callback"
-  }, async (accessToken, refreshToken, profile, done) => {
-    try {
-      let user = await storage.getUserByGoogleId(profile.id);
-      
-      if (!user) {
-        // Check if user exists with same email
-        user = await storage.getUserByEmail(profile.emails?.[0]?.value || '');
+  // Only configure Google OAuth if credentials are provided
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(new GoogleStrategy({
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "/api/auth/google/callback"
+    }, async (accessToken, refreshToken, profile, done) => {
+      try {
+        let user = await storage.getUserByGoogleId(profile.id);
         
-        if (user) {
-          // Link Google account to existing user
-          await storage.updateUser(user.id, { googleId: profile.id });
-        } else {
-          // Create new user
-          user = await storage.createUser({
-            email: profile.emails?.[0]?.value || '',
-            name: profile.displayName || '',
-            googleId: profile.id,
-          });
+        if (!user) {
+          // Check if user exists with same email
+          user = await storage.getUserByEmail(profile.emails?.[0]?.value || '');
+          
+          if (user) {
+            // Link Google account to existing user
+            await storage.updateUser(user.id, { googleId: profile.id });
+          } else {
+            // Create new user
+            user = await storage.createUser({
+              email: profile.emails?.[0]?.value || '',
+              name: profile.displayName || '',
+              googleId: profile.id,
+            });
+          }
         }
-      }
 
-      return done(null, { id: user.id, email: user.email, name: user.name });
-    } catch (error) {
-      return done(error);
-    }
-  }));
+        return done(null, { id: user.id, email: user.email, name: user.name });
+      } catch (error) {
+        return done(error);
+      }
+    }));
+  }
 
   passport.serializeUser((user, done) => {
     done(null, user.id);
