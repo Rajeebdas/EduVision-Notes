@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
 
-  const { data: authConfig } = useQuery({
+  const { data: authConfig } = useQuery<{ googleOAuthEnabled: boolean }>({
     queryKey: ["/api/auth/config"],
     retry: false,
   });
@@ -80,7 +80,7 @@ export default function AuthPage() {
 
               <div className="space-y-4">
                 {/* Google OAuth Button - only show if enabled */}
-                {authConfig?.googleOAuthEnabled && (
+                {authConfig && authConfig.googleOAuthEnabled && (
                   <>
                     <Button
                       variant="outline"

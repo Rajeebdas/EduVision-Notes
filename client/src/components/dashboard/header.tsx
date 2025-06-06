@@ -71,6 +71,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
   };
 
   const getInitials = (name: string) => {
+    if (!name) return "U";
     return name
       .split(" ")
       .map((word) => word[0])
