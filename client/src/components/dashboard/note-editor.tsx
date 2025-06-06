@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { 
   Heart, 
   Share, 
@@ -17,7 +18,10 @@ import {
   Image, 
   Code,
   Eye,
-  Plus
+  Plus,
+  Tag,
+  Calendar,
+  Clock
 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -34,6 +38,8 @@ export function NoteEditor({ note, onNoteChange }: NoteEditorProps) {
   const [content, setContent] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [newTag, setNewTag] = useState("");
+  const [showTagInput, setShowTagInput] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -141,6 +147,36 @@ export function NoteEditor({ note, onNoteChange }: NoteEditorProps) {
     return `Saved ${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
   };
 
+  const addTag = () => {
+    if (newTag.trim() && !tags.includes(newTag.trim())) {
+      const updatedTags = [...tags, newTag.trim()];
+      setTags(updatedTags);
+      setNewTag("");
+      setShowTagInput(false);
+      if (note) {
+        updateNoteMutation.mutate({ tags: updatedTags });
+      }
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    const updatedTags = tags.filter(tag => tag !== tagToRemove);
+    setTags(updatedTags);
+    if (note) {
+      updateNoteMutation.mutate({ tags: updatedTags });
+    }
+  };
+
+  const handleTagKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTag();
+    } else if (e.key === 'Escape') {
+      setNewTag("");
+      setShowTagInput(false);
+    }
+  };
+
   if (!note) {
     return (
       <div className="flex-1 flex flex-col bg-card">
@@ -198,20 +234,44 @@ export function NoteEditor({ note, onNoteChange }: NoteEditorProps) {
         />
         
         {/* Tags */}
-        <div className="flex items-center space-x-2 mt-3">
+        <div className="flex items-center flex-wrap gap-2 mt-3">
           {tags.map((tag) => (
-            <Badge key={tag} variant="secondary">
-              {tag}
+            <Badge key={tag} variant="secondary" className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-colors">
+              <span>{tag}</span>
+              <button
+                className="ml-1 hover:text-destructive-foreground"
+                onClick={() => removeTag(tag)}
+              >
+                ×
+              </button>
             </Badge>
           ))}
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-dashed"
-          >
-            <Plus className="h-3 w-3 mr-1" />
-            Add Tag
-          </Button>
+          
+          {showTagInput ? (
+            <div className="flex items-center space-x-1">
+              <Input
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                onKeyDown={handleTagKeyPress}
+                placeholder="Tag name..."
+                className="h-6 w-24 text-xs"
+                autoFocus
+              />
+              <Button size="sm" variant="ghost" onClick={addTag} className="h-6 w-6 p-0">
+                <Plus className="h-3 w-3" />
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-dashed h-6"
+              onClick={() => setShowTagInput(true)}
+            >
+              <Tag className="h-3 w-3 mr-1" />
+              Add Tag
+            </Button>
+          )}
         </div>
       </div>
 

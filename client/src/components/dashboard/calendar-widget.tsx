@@ -63,8 +63,8 @@ export function CalendarWidget({ selectedDate, onDateSelect, notesCount = {} }: 
       <CardContent className="pb-3">
         {/* Weekday headers */}
         <div className="grid grid-cols-7 gap-1 mb-2">
-          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) => (
-            <div key={day} className="text-xs font-medium text-muted-foreground text-center p-1">
+          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+            <div key={`weekday-${index}`} className="text-xs font-medium text-muted-foreground text-center p-1">
               {day}
             </div>
           ))}
