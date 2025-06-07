@@ -1,13 +1,13 @@
 import {
-  users,
-  notes,
   type User,
   type Note,
   type InsertUser,
   type InsertNote,
 } from "@shared/schema";
-import { db } from "./db";
-import { eq, desc, and, ilike, or } from "drizzle-orm";
+import session from "express-session";
+import createMemoryStore from "memorystore";
+
+const MemoryStore = createMemoryStore(session);
 
 export interface IStorage {
   // User methods
@@ -24,9 +24,22 @@ export interface IStorage {
   searchNotes(userId: number, query: string): Promise<Note[]>;
   getFavoriteNotes(userId: number): Promise<Note[]>;
   toggleNoteFavorite(id: number, userId: number): Promise<Note | undefined>;
+
+  sessionStore: session.SessionStore;
 }
 
-export class DatabaseStorage implements IStorage {
+export class MemStorage implements IStorage {
+  private users: Map<number, User> = new Map();
+  private notes: Map<number, Note> = new Map();
+  private userIdCounter = 1;
+  private noteIdCounter = 1;
+  public sessionStore: session.SessionStore;
+
+  constructor() {
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000,
+    });
+  }
   // User methods
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
