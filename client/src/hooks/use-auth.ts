@@ -9,6 +9,9 @@ export function useAuth() {
     queryKey: ["/api/user"],
     retry: false,
     staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchInterval: false,
   });
 
   const loginMutation = useMutation({
