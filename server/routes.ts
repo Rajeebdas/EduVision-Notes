@@ -1,28 +1,23 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth } from "./auth";
 
-export async function registerRoutes(app: Express): Promise<Server> {
+function requireAuth(req: any, res: any, next: any) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  next();
+}
+
+export function registerRoutes(app: Express): Server {
   // Auth middleware
-  await setupAuth(app);
-
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  setupAuth(app);
 
   // Notes routes
-  app.get("/api/notes", isAuthenticated, async (req: any, res) => {
+  app.get("/api/notes", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { search, favorites } = req.query;
       
       let notes;
@@ -41,9 +36,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/notes/:id", isAuthenticated, async (req: any, res) => {
+  app.get("/api/notes/:id", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const noteId = parseInt(req.params.id);
       const note = await storage.getNote(noteId, userId);
       
@@ -58,9 +53,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/notes", isAuthenticated, async (req: any, res) => {
+  app.post("/api/notes", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const noteData = {
         ...req.body,
         userId,
@@ -74,9 +69,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/notes/:id", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/notes/:id", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const noteId = parseInt(req.params.id);
       const updates = req.body;
       
@@ -93,9 +88,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/notes/:id", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/notes/:id", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const noteId = parseInt(req.params.id);
       
       const success = await storage.deleteNote(noteId, userId);
@@ -111,9 +106,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/notes/:id/favorite", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/notes/:id/favorite", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const noteId = parseInt(req.params.id);
       
       const note = await storage.toggleNoteFavorite(noteId, userId);

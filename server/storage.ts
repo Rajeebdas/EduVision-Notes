@@ -3,52 +3,48 @@ import {
   notes,
   type User,
   type Note,
-  type UpsertUser,
+  type InsertUser,
   type InsertNote,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, ilike, or } from "drizzle-orm";
 
 export interface IStorage {
-  // User methods for Replit Auth
-  getUser(id: string): Promise<User | undefined>;
-  upsertUser(user: UpsertUser): Promise<User>;
+  // User methods
+  getUser(id: number): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
   
   // Note methods
-  getNotesByUserId(userId: string): Promise<Note[]>;
-  getNote(id: number, userId: string): Promise<Note | undefined>;
+  getNotesByUserId(userId: number): Promise<Note[]>;
+  getNote(id: number, userId: number): Promise<Note | undefined>;
   createNote(note: InsertNote): Promise<Note>;
-  updateNote(id: number, userId: string, updates: Partial<InsertNote>): Promise<Note | undefined>;
-  deleteNote(id: number, userId: string): Promise<boolean>;
-  searchNotes(userId: string, query: string): Promise<Note[]>;
-  getFavoriteNotes(userId: string): Promise<Note[]>;
-  toggleNoteFavorite(id: number, userId: string): Promise<Note | undefined>;
+  updateNote(id: number, userId: number, updates: Partial<InsertNote>): Promise<Note | undefined>;
+  deleteNote(id: number, userId: number): Promise<boolean>;
+  searchNotes(userId: number, query: string): Promise<Note[]>;
+  getFavoriteNotes(userId: number): Promise<Note[]>;
+  toggleNoteFavorite(id: number, userId: number): Promise<Note | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
-  // User methods for Replit Auth
-  async getUser(id: string): Promise<User | undefined> {
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
 
-  async upsertUser(userData: UpsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUser(userData: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(userData).returning();
     return user;
   }
 
   // Note methods
-  async getNotesByUserId(userId: string): Promise<Note[]> {
+  async getNotesByUserId(userId: number): Promise<Note[]> {
     return await db
       .select()
       .from(notes)
@@ -56,7 +52,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(notes.updatedAt));
   }
 
-  async getNote(id: number, userId: string): Promise<Note | undefined> {
+  async getNote(id: number, userId: number): Promise<Note | undefined> {
     const [note] = await db
       .select()
       .from(notes)
@@ -69,7 +65,7 @@ export class DatabaseStorage implements IStorage {
     return newNote;
   }
 
-  async updateNote(id: number, userId: string, updates: Partial<InsertNote>): Promise<Note | undefined> {
+  async updateNote(id: number, userId: number, updates: Partial<InsertNote>): Promise<Note | undefined> {
     const [updatedNote] = await db
       .update(notes)
       .set({ ...updates, updatedAt: new Date() })
@@ -78,14 +74,14 @@ export class DatabaseStorage implements IStorage {
     return updatedNote;
   }
 
-  async deleteNote(id: number, userId: string): Promise<boolean> {
+  async deleteNote(id: number, userId: number): Promise<boolean> {
     const result = await db
       .delete(notes)
       .where(and(eq(notes.id, id), eq(notes.userId, userId)));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
-  async searchNotes(userId: string, query: string): Promise<Note[]> {
+  async searchNotes(userId: number, query: string): Promise<Note[]> {
     return await db
       .select()
       .from(notes)
@@ -101,7 +97,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(notes.updatedAt));
   }
 
-  async getFavoriteNotes(userId: string): Promise<Note[]> {
+  async getFavoriteNotes(userId: number): Promise<Note[]> {
     return await db
       .select()
       .from(notes)
@@ -109,7 +105,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(notes.updatedAt));
   }
 
-  async toggleNoteFavorite(id: number, userId: string): Promise<Note | undefined> {
+  async toggleNoteFavorite(id: number, userId: number): Promise<Note | undefined> {
     const note = await this.getNote(id, userId);
     if (!note) return undefined;
 
