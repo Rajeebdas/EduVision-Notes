@@ -1,13 +1,17 @@
 import {
+  users,
+  notes,
   type User,
   type Note,
   type InsertUser,
   type InsertNote,
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, and, ilike, or } from "drizzle-orm";
 import session from "express-session";
-import createMemoryStore from "memorystore";
+import connectPg from "connect-pg-simple";
 
-const MemoryStore = createMemoryStore(session);
+const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
   // User methods
@@ -25,21 +29,19 @@ export interface IStorage {
   getFavoriteNotes(userId: number): Promise<Note[]>;
   toggleNoteFavorite(id: number, userId: number): Promise<Note | undefined>;
 
-  sessionStore: session.SessionStore;
+  sessionStore: any;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User> = new Map();
-  private notes: Map<number, Note> = new Map();
-  private userIdCounter = 1;
-  private noteIdCounter = 1;
-  public sessionStore: session.SessionStore;
+export class DatabaseStorage implements IStorage {
+  public sessionStore: any;
 
   constructor() {
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000,
+    this.sessionStore = new PostgresSessionStore({
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: true,
     });
   }
+
   // User methods
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -52,7 +54,10 @@ export class MemStorage implements IStorage {
   }
 
   async createUser(userData: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(userData).returning();
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .returning();
     return user;
   }
 
@@ -73,18 +78,21 @@ export class MemStorage implements IStorage {
     return note;
   }
 
-  async createNote(note: InsertNote): Promise<Note> {
-    const [newNote] = await db.insert(notes).values(note).returning();
-    return newNote;
+  async createNote(noteData: InsertNote): Promise<Note> {
+    const [note] = await db
+      .insert(notes)
+      .values(noteData)
+      .returning();
+    return note;
   }
 
   async updateNote(id: number, userId: number, updates: Partial<InsertNote>): Promise<Note | undefined> {
-    const [updatedNote] = await db
+    const [note] = await db
       .update(notes)
       .set({ ...updates, updatedAt: new Date() })
       .where(and(eq(notes.id, id), eq(notes.userId, userId)))
       .returning();
-    return updatedNote;
+    return note;
   }
 
   async deleteNote(id: number, userId: number): Promise<boolean> {
