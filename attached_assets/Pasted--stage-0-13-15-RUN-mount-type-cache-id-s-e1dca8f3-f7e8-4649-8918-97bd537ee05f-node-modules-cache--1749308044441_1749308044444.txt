@@ -1,0 +1,57 @@
+[stage-0 13/15] RUN --mount=type=cache,id=s/e1dca8f3-f7e8-4649-8918-97bd537ee05f-node_modules/cache,target=/app/node_modules/.cache npm install && npm run build
+"npm install && npm run build" did not complete successfully: exit code: 1
+
+View in context
+
+npm warn config production Use `--omit=dev` instead.
+
+up to date, audited 509 packages in 3s
+
+68 packages are looking for funding
+  run `npm fund` for details
+
+7 moderate severity vulnerabilities
+To address issues that do not require attention, run:
+  npm audit fix
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+Run `npm audit` for details.
+
+npm warn config production Use `--omit=dev` instead.
+
+> eduvision-notes@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+/app/node_modules/rollup/dist/native.js:63
+		throw new Error(
+		      ^
+Error: Cannot find module @rollup/rollup-linux-x64-gnu. npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). Please try `npm i` again after removing both package-lock.json and node_modules directory.
+
+    at requireWithFriendlyError (/app/node_modules/rollup/dist/native.js:63:9)
+    at Object.<anonymous> (/app/node_modules/rollup/dist/native.js:72:76)
+    at Module._compile (node:internal/modules/cjs/loader:1546:14)
+    at Object..js (node:internal/modules/cjs/loader:1689:10)
+    at Module.load (node:internal/modules/cjs/loader:1318:32)
+    at Function._load (node:internal/modules/cjs/loader:1128:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:315:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:218:24)
+    at cjsLoader (node:internal/modules/esm/translators:263:5)
+    at ModuleWrap.<anonymous> (node:internal/modules/esm/translators:196:7) {
+  [cause]: Error: Cannot find module '@rollup/rollup-linux-x64-gnu'
+  Require stack:
+  - /app/node_modules/rollup/dist/native.js
+      at Function._resolveFilename (node:internal/modules/cjs/loader:1249:15)
+      at Function._load (node:internal/modules/cjs/loader:1075:27)
+      at TracingChannel.traceSync (node:diagnostics_channel:315:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:218:24)
+      at Module.require (node:internal/modules/cjs/loader:1340:12)
+      at require (node:internal/modules/helpers:141:16)
+      at requireWithFriendlyError (/app/node_modules/rollup/dist/native.js:45:10)
+      at Object.<anonymous> (/app/node_modules/rollup/dist/native.js:72:76)
+      at Module._compile (node:internal/modules/cjs/loader:1546:14)
+      at Object..js (node:internal/modules/cjs/loader:1689:10) {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: [ '/app/node_modules/rollup/dist/native.js' ]
+  }
+}
+Node.js v22.11.0
