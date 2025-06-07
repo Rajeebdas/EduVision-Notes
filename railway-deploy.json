@@ -1,0 +1,25 @@
+{
+  "name": "EduVision Notes",
+  "description": "A modern note-taking application",
+  "services": [
+    {
+      "name": "web",
+      "source": {
+        "type": "github",
+        "repo": "your-username/EduVision-Notes"
+      },
+      "build": {
+        "buildCommand": "",
+        "startCommand": "npx tsx server/index.ts"
+      },
+      "environment": {
+        "NODE_ENV": "production",
+        "SESSION_SECRET": "generate-secure-random-string-here"
+      }
+    },
+    {
+      "name": "database",
+      "type": "postgresql"
+    }
+  ]
+}
