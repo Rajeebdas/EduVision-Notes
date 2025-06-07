@@ -2,7 +2,7 @@
 nixPkgs = ['nodejs-18_x']
 
 [phases.install] 
-cmds = ['npm install --omit=dev']
+cmds = ['npm install']
 
 [start]
-cmd = 'node start.js'
+cmd = 'npx tsx server/index.ts'
