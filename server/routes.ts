@@ -1,23 +1,45 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth } from "./auth";
 
-function requireAuth(req: any, res: any, next: any) {
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ message: "Unauthorized" });
+// Default guest user email - all notes will be associated with this user
+const GUEST_USER_EMAIL = "guest@eduvision.com";
+
+// Helper function to get or create guest user
+let cachedGuestUserId: number | null = null;
+
+async function getGuestUserId(): Promise<number> {
+  if (cachedGuestUserId) {
+    return cachedGuestUserId;
   }
-  next();
+
+  try {
+    // Try to find guest user by email
+    let guestUser = await storage.getUserByEmail(GUEST_USER_EMAIL);
+    
+    if (!guestUser) {
+      // Create guest user if it doesn't exist
+      guestUser = await storage.createUser({
+        email: GUEST_USER_EMAIL,
+        name: "Guest User",
+        password: "guest", // Not used since auth is disabled
+      });
+    }
+    
+    cachedGuestUserId = guestUser.id;
+    return guestUser.id;
+  } catch (error) {
+    console.error("Error getting guest user:", error);
+    // Fallback to ID 1 if there's an error
+    return 1;
+  }
 }
 
 export function registerRoutes(app: Express): Server {
-  // Auth middleware
-  setupAuth(app);
-
-  // Notes routes
-  app.get("/api/notes", requireAuth, async (req: any, res) => {
+  // Notes routes - no authentication required
+  app.get("/api/notes", async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = await getGuestUserId();
       const { search, favorites } = req.query;
       
       let notes;
@@ -36,9 +58,9 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  app.get("/api/notes/:id", requireAuth, async (req: any, res) => {
+  app.get("/api/notes/:id", async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = await getGuestUserId();
       const noteId = parseInt(req.params.id);
       const note = await storage.getNote(noteId, userId);
       
@@ -53,9 +75,9 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  app.post("/api/notes", requireAuth, async (req: any, res) => {
+  app.post("/api/notes", async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = await getGuestUserId();
       const noteData = {
         ...req.body,
         userId,
@@ -69,9 +91,9 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  app.patch("/api/notes/:id", requireAuth, async (req: any, res) => {
+  app.patch("/api/notes/:id", async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = await getGuestUserId();
       const noteId = parseInt(req.params.id);
       const updates = req.body;
       
@@ -88,9 +110,9 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  app.delete("/api/notes/:id", requireAuth, async (req: any, res) => {
+  app.delete("/api/notes/:id", async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = await getGuestUserId();
       const noteId = parseInt(req.params.id);
       
       const success = await storage.deleteNote(noteId, userId);
@@ -106,9 +128,9 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  app.patch("/api/notes/:id/favorite", requireAuth, async (req: any, res) => {
+  app.patch("/api/notes/:id/favorite", async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = await getGuestUserId();
       const noteId = parseInt(req.params.id);
       
       const note = await storage.toggleNoteFavorite(noteId, userId);
@@ -121,6 +143,21 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error toggling favorite:", error);
       res.status(500).json({ message: "Failed to toggle favorite" });
+    }
+  });
+
+  // User endpoint - returns guest user without authentication
+  app.get("/api/user", async (req: any, res) => {
+    try {
+      const userId = await getGuestUserId();
+      const guestUser = await storage.getUser(userId);
+      if (!guestUser) {
+        return res.status(500).json({ message: "Guest user not found" });
+      }
+      res.json({ id: guestUser.id, name: guestUser.name, email: guestUser.email });
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
     }
   });
 

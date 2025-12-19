@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, Plus, Moon, Sun, StickyNote, Settings, HelpCircle, LogOut, ChevronDown } from "lucide-react";
+import { Search, Plus, Moon, Sun, StickyNote, Settings, HelpCircle, ChevronDown } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/components/theme-provider";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -23,7 +23,7 @@ interface HeaderProps {
 }
 
 export function Header({ searchQuery, onSearchChange }: HeaderProps) {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -55,19 +55,6 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
 
   const toggleTheme = () => {
     setTheme(theme === "light" ? "dark" : "light");
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      window.location.href = "/auth";
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to logout",
-        variant: "destructive",
-      });
-    }
   };
 
   const getInitials = (name: string) => {
@@ -162,13 +149,6 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
               <DropdownMenuItem>
                 <HelpCircle className="mr-2 h-4 w-4" />
                 Help & Support
-              </DropdownMenuItem>
-              
-              <DropdownMenuSeparator />
-              
-              <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign Out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

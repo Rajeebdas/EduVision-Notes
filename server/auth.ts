@@ -122,13 +122,7 @@ export function setupAuth(app: Express) {
     });
   });
 
-  app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    const user = req.user as SelectUser;
-    res.json({ id: user.id, name: user.name, email: user.email });
-  });
+  // User endpoint moved to routes.ts - no authentication required
 }
 
 export const hashPassword_export = hashPassword;
