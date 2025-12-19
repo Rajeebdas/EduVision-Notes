@@ -31,15 +31,21 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
+  // Use PostgreSQL session store in production, MemoryStore in development
+  const isProduction = process.env.NODE_ENV === "production";
+  const sessionStore = isProduction ? storage.sessionStore : new MemStore({
+    checkPeriod: 86400000, // prune expired entries every 24h
+  });
+
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "dev-secret-key",
     resave: false,
     saveUninitialized: false,
-    store: new MemStore({
-      checkPeriod: 86400000, // prune expired entries every 24h
-    }),
+    store: sessionStore,
     cookie: {
-      secure: false, // set to true in production with HTTPS
+      secure: isProduction, // use secure cookies in production with HTTPS
+      httpOnly: true,
+      sameSite: isProduction ? "none" : "lax", // allow cross-site cookies in production
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
   };
