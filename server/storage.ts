@@ -10,6 +10,7 @@ import { db } from "./db";
 import { eq, desc, and, ilike, or } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
+import { MemoryStorage } from "./memory-storage";
 
 const PostgresSessionStore = connectPg(session);
 
@@ -36,6 +37,9 @@ export class DatabaseStorage implements IStorage {
   public sessionStore: any;
 
   constructor() {
+    if (!process.env.DATABASE_URL) {
+      throw new Error("DATABASE_URL is required for DatabaseStorage");
+    }
     this.sessionStore = new PostgresSessionStore({
       conString: process.env.DATABASE_URL,
       createTableIfMissing: true,
@@ -44,16 +48,19 @@ export class DatabaseStorage implements IStorage {
 
   // User methods
   async getUser(id: number): Promise<User | undefined> {
+    if (!db) throw new Error("Database not available");
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
+    if (!db) throw new Error("Database not available");
     const [user] = await db.select().from(users).where(eq(users.email, email));
     return user;
   }
 
   async createUser(userData: InsertUser): Promise<User> {
+    if (!db) throw new Error("Database not available");
     const [user] = await db
       .insert(users)
       .values(userData)
@@ -63,6 +70,7 @@ export class DatabaseStorage implements IStorage {
 
   // Note methods
   async getNotesByUserId(userId: number): Promise<Note[]> {
+    if (!db) throw new Error("Database not available");
     return await db
       .select()
       .from(notes)
@@ -71,6 +79,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getNote(id: number, userId: number): Promise<Note | undefined> {
+    if (!db) throw new Error("Database not available");
     const [note] = await db
       .select()
       .from(notes)
@@ -79,6 +88,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createNote(noteData: InsertNote): Promise<Note> {
+    if (!db) throw new Error("Database not available");
     const [note] = await db
       .insert(notes)
       .values(noteData)
@@ -87,6 +97,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateNote(id: number, userId: number, updates: Partial<InsertNote>): Promise<Note | undefined> {
+    if (!db) throw new Error("Database not available");
     const [note] = await db
       .update(notes)
       .set({ ...updates, updatedAt: new Date() })
@@ -96,6 +107,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteNote(id: number, userId: number): Promise<boolean> {
+    if (!db) throw new Error("Database not available");
     const result = await db
       .delete(notes)
       .where(and(eq(notes.id, id), eq(notes.userId, userId)));
@@ -103,6 +115,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async searchNotes(userId: number, query: string): Promise<Note[]> {
+    if (!db) throw new Error("Database not available");
     return await db
       .select()
       .from(notes)
@@ -119,6 +132,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFavoriteNotes(userId: number): Promise<Note[]> {
+    if (!db) throw new Error("Database not available");
     return await db
       .select()
       .from(notes)
@@ -127,6 +141,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async toggleNoteFavorite(id: number, userId: number): Promise<Note | undefined> {
+    if (!db) throw new Error("Database not available");
     const note = await this.getNote(id, userId);
     if (!note) return undefined;
 
@@ -142,4 +157,37 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// Try to use database storage, fallback to memory storage if database is unavailable
+let storage: IStorage = new MemoryStorage(); // Default to memory storage
+
+async function initializeStorage() {
+  if (db && process.env.DATABASE_URL) {
+    try {
+      // Test database connection with a timeout
+      const testPromise = db.select().from(users).limit(1);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Connection timeout")), 2000)
+      );
+      
+      await Promise.race([testPromise, timeoutPromise]);
+      storage = new DatabaseStorage();
+      console.log("✓ Database connection successful - using PostgreSQL storage");
+    } catch (error) {
+      console.log("⚠ Database connection failed - using in-memory storage");
+      console.log("  Note: Data will be lost on server restart");
+      storage = new MemoryStorage();
+    }
+  } else {
+    console.log("⚠ DATABASE_URL not set or database unavailable - using in-memory storage");
+    console.log("  Note: Data will be lost on server restart");
+    storage = new MemoryStorage();
+  }
+}
+
+// Initialize storage asynchronously (non-blocking)
+initializeStorage().catch(() => {
+  console.log("⚠ Storage initialization failed - using in-memory storage");
+  storage = new MemoryStorage();
+});
+
+export { storage };

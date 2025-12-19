@@ -44,10 +44,13 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
         description: "New note created",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      const errorMessage = error?.message || "Failed to create note";
       toast({
         title: "Error",
-        description: "Failed to create note",
+        description: errorMessage.includes("Guest user") 
+          ? "Database not set up. Please run 'npm run db:push' first."
+          : errorMessage,
         variant: "destructive",
       });
     },

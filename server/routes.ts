@@ -19,23 +19,59 @@ async function getGuestUserId(): Promise<number> {
     
     if (!guestUser) {
       // Create guest user if it doesn't exist
+      console.log("Creating guest user...");
       guestUser = await storage.createUser({
         email: GUEST_USER_EMAIL,
         name: "Guest User",
         password: "guest", // Not used since auth is disabled
       });
+      console.log("Guest user created with ID:", guestUser.id);
+    } else {
+      console.log("Guest user found with ID:", guestUser.id);
     }
     
     cachedGuestUserId = guestUser.id;
     return guestUser.id;
-  } catch (error) {
-    console.error("Error getting guest user:", error);
-    // Fallback to ID 1 if there's an error
+  } catch (error: any) {
+    // Try to get user with ID 1 as fallback (works with memory storage)
+    try {
+      const fallbackUser = await storage.getUser(1);
+      if (fallbackUser) {
+        console.log("Using fallback user ID 1");
+        cachedGuestUserId = 1;
+        return 1;
+      }
+    } catch (fallbackError) {
+      // If even fallback fails, use ID 1 anyway (memory storage always has it)
+      console.log("Using default guest user ID 1");
+      cachedGuestUserId = 1;
+      return 1;
+    }
+    
+    // Last resort - return 1 (memory storage always has guest user with ID 1)
+    cachedGuestUserId = 1;
     return 1;
   }
 }
 
+// Initialize guest user on server start
+async function initializeGuestUser() {
+  try {
+    await getGuestUserId();
+    console.log("Guest user initialized successfully");
+  } catch (error) {
+    console.error("Failed to initialize guest user:", error);
+    console.error("Please ensure:");
+    console.error("1. Database is running and accessible");
+    console.error("2. Database schema is pushed (run: npm run db:push)");
+    console.error("3. DATABASE_URL environment variable is set correctly");
+  }
+}
+
 export function registerRoutes(app: Express): Server {
+  // Initialize guest user when routes are registered
+  initializeGuestUser().catch(console.error);
+  
   // Notes routes - no authentication required
   app.get("/api/notes", async (req: any, res) => {
     try {
@@ -78,6 +114,16 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/notes", async (req: any, res) => {
     try {
       const userId = await getGuestUserId();
+      
+      // Verify guest user exists
+      const guestUser = await storage.getUser(userId);
+      if (!guestUser) {
+        console.error("Guest user not found after creation attempt");
+        return res.status(500).json({ 
+          message: "Guest user not found. Please ensure database is set up correctly." 
+        });
+      }
+      
       const noteData = {
         ...req.body,
         userId,
@@ -85,9 +131,13 @@ export function registerRoutes(app: Express): Server {
       
       const note = await storage.createNote(noteData);
       res.status(201).json(note);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating note:", error);
-      res.status(500).json({ message: "Failed to create note" });
+      const errorMessage = error?.message || "Failed to create note";
+      res.status(500).json({ 
+        message: errorMessage,
+        details: process.env.NODE_ENV === "development" ? error?.stack : undefined
+      });
     }
   });
 
