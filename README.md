@@ -78,13 +78,3 @@ npm run dev
    - `SESSION_SECRET` (generate secure key)
    - `NODE_ENV=production`
 4. Deploy automatically with `nixpacks.toml` configuration
-
-### Manual Deployment
-
-Use the included configuration files:
-- `nixpacks.toml` - Railway deployment
-- `railway.toml` - Railway settings
-
-## License
-
-MIT License
